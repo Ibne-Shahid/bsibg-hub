@@ -89,7 +89,7 @@ export default function RegisterPage() {
         
         <div className="text-center mb-8">
           <h2 className="text-3xl font-extrabold text-white">Create <span className="text-cyan-400">Account</span></h2>
-          <p className="text-slate-400 mt-2">Join the BSIBG Gaming Hub</p>
+          <p className="text-slate-400 mt-2">Join the BSIBG Family</p>
         </div>
 
         <form onSubmit={handleRegister} className="space-y-5">

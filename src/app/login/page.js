@@ -25,7 +25,7 @@ export default function LoginPage() {
       <div className="bg-[#1e293b]/50 backdrop-blur-xl p-8 rounded-3xl shadow-2xl w-full max-w-md border border-slate-700/50">
         <div className="text-center mb-8">
           <h2 className="text-3xl font-extrabold text-white">Welcome <span className="text-cyan-400">Back!</span></h2>
-          <p className="text-slate-400 mt-2">Login to manage your mods</p>
+          <p className="text-slate-400 mt-2">Login to explore mods, reels & tournaments</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-5">

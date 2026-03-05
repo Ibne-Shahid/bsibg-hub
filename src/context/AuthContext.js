@@ -6,25 +6,72 @@ import {
   signOut, 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword,
-  updateProfile 
+  updateProfile,
+  GoogleAuthProvider
 } from "firebase/auth";
-import { auth, googleProvider } from "@/lib/firebase";
+import { auth } from "@/lib/firebase";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [dbUser, setDbUser] = useState(null); 
   const [loading, setLoading] = useState(true);
 
+  const saveUserToDb = async (currentUser) => {
+    const userData = {
+      uid: currentUser.uid,
+      name: currentUser.displayName,
+      email: currentUser.email,
+      photoURL: currentUser.photoURL,
+      role: 'gamer' 
+    };
+
+    try {
+      const res = await fetch('http://localhost:5000/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData)
+      });
+      const data = await res.json();
+      setDbUser(data);
+    } catch (err) {
+      console.error("DB Save Error:", err);
+    }
+  };
+
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
+      
+      if (currentUser) {
+        try {
+          const res = await fetch(`http://localhost:5000/users?email=${currentUser.email}`);
+          const data = await res.json();
+          setDbUser(data);
+        } catch (err) {
+          console.error("Error fetching user role:", err);
+        }
+      } else {
+        setDbUser(null);
+      }
+      
       setLoading(false);
     });
     return () => unsubscribe();
   }, []);
 
-  const loginWithGoogle = () => signInWithPopup(auth, googleProvider);
+  const loginWithGoogle = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      await saveUserToDb(result.user); 
+      return result;
+    } catch (error) {
+      console.error("Google Login Error:", error);
+      throw error;
+    }
+  };
 
   const registerWithEmail = (email, password) => 
     createUserWithEmailAndPassword(auth, email, password);
@@ -36,7 +83,6 @@ export const AuthProvider = ({ children }) => {
     if (auth.currentUser) {
       try {
         await updateProfile(auth.currentUser, { displayName, photoURL });
-        // State update korar somoy current user er object ta ke clone kora bhalo
         setUser({ ...auth.currentUser, displayName, photoURL });
       } catch (error) {
         console.error("Error updating profile:", error);
@@ -49,6 +95,7 @@ export const AuthProvider = ({ children }) => {
   return (
     <AuthContext.Provider value={{ 
       user, 
+      dbUser, 
       loading, 
       loginWithGoogle, 
       registerWithEmail, 
@@ -61,5 +108,4 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-// --- EI LINE TA KHUBI JORURI ---
 export const useAuth = () => useContext(AuthContext);

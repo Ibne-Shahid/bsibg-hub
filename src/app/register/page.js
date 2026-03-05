@@ -33,38 +33,50 @@ export default function RegisterPage() {
 
       if (image) {
         const formData = new FormData();
-        formData.append("file", image);
         formData.append("upload_preset", "bsibg-preset"); 
+        formData.append("file", image);
         
-        // Error handling shoho fetch
         const res = await fetch(
           `https://api.cloudinary.com/v1_1/dyzfniecr/image/upload`,
-          { 
-            method: "POST", 
-            body: formData 
-          }
-        ).catch(err => {
-          throw new Error("Network error: Please check your internet or disable Ad-blocker.");
-        });
-        
-        if (!res.ok) {
-          const errorData = await res.json();
-          throw new Error(errorData.error.message || "Cloudinary upload failed");
-        }
-
+          { method: "POST", body: formData }
+        );
         const data = await res.json();
-        photoURL = data.secure_url;
+        if (res.ok) photoURL = data.secure_url;
       } else {
         photoURL = `https://ui-avatars.com/api/?name=${displayName.replace(/\s+/g, '+')}&background=0ea5e9&color=fff`;
       }
 
-      await registerWithEmail(email, password);
-      await updateUser(displayName, photoURL);
+      const result = await registerWithEmail(email, password);
+      const user = result.user;
 
-      router.push("/");
+      if (user) {
+        await updateUser(displayName, photoURL);
+
+        const userData = {
+          uid: user.uid,
+          name: displayName,
+          email: email,
+          photoURL: photoURL,
+          role: 'gamer'
+        };
+
+        const dbRes = await fetch('http://localhost:5000/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(userData)
+        });
+
+        if (dbRes.ok) {
+          console.log("User successfully saved to MongoDB");
+          router.push("/");
+        } else {
+          console.error("Failed to save user in MongoDB");
+          router.push("/");
+        }
+      }
 
     } catch (err) {
-      console.error("Full Error Details:", err);
+      console.error(err);
       alert(err.message);
     } finally {
       setUploading(false);
@@ -77,7 +89,7 @@ export default function RegisterPage() {
         
         <div className="text-center mb-8">
           <h2 className="text-3xl font-extrabold text-white">Create <span className="text-cyan-400">Account</span></h2>
-          <p className="text-slate-400 mt-2">Join to share and download mods</p>
+          <p className="text-slate-400 mt-2">Join the BSIBG Gaming Hub</p>
         </div>
 
         <form onSubmit={handleRegister} className="space-y-5">
@@ -92,44 +104,18 @@ export default function RegisterPage() {
                   </svg>
                 )}
               </div>
-              <input 
-                type="file" 
-                accept="image/*" 
-                className="absolute inset-0 opacity-0 cursor-pointer" 
-                onChange={handleImageChange}
-              />
+              <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer" onChange={handleImageChange} />
             </div>
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Profile Photo</span>
           </div>
 
           <div className="space-y-4">
-            <input 
-              type="text" 
-              placeholder="Gaming Name"
-              className="w-full bg-[#0f172a] border border-slate-600 rounded-xl px-4 py-3 focus:ring-2 focus:ring-cyan-500 outline-none transition-all text-white placeholder:text-slate-500"
-              onChange={(e) => setDisplayName(e.target.value)}
-              required
-            />
-            <input 
-              type="email" 
-              placeholder="Email Address"
-              className="w-full bg-[#0f172a] border border-slate-600 rounded-xl px-4 py-3 focus:ring-2 focus:ring-cyan-500 outline-none transition-all text-white placeholder:text-slate-500"
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-            <input 
-              type="password" 
-              placeholder="Password"
-              className="w-full bg-[#0f172a] border border-slate-600 rounded-xl px-4 py-3 focus:ring-2 focus:ring-cyan-500 outline-none transition-all text-white placeholder:text-slate-500"
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <input type="text" placeholder="Gaming Name" className="w-full bg-[#0f172a] border border-slate-600 rounded-xl px-4 py-3 focus:ring-2 focus:ring-cyan-500 outline-none transition-all text-white" onChange={(e) => setDisplayName(e.target.value)} required />
+            <input type="email" placeholder="Email Address" className="w-full bg-[#0f172a] border border-slate-600 rounded-xl px-4 py-3 focus:ring-2 focus:ring-cyan-500 outline-none transition-all text-white" onChange={(e) => setEmail(e.target.value)} required />
+            <input type="password" placeholder="Password" className="w-full bg-[#0f172a] border border-slate-600 rounded-xl px-4 py-3 focus:ring-2 focus:ring-cyan-500 outline-none transition-all text-white" onChange={(e) => setPassword(e.target.value)} required />
           </div>
 
-          <button 
-            disabled={uploading}
-            className="w-full bg-linear-to-r from-cyan-500 to-indigo-600 py-3 rounded-xl font-bold text-white shadow-lg shadow-cyan-500/30 hover:scale-[1.02] transition-transform disabled:opacity-50 disabled:scale-100"
-          >
+          <button disabled={uploading} className="w-full bg-linear-to-r from-cyan-500 to-indigo-600 py-3 rounded-xl font-bold text-white shadow-lg shadow-cyan-500/30 hover:scale-[1.02] transition-transform disabled:opacity-50">
             {uploading ? "Registering..." : "Sign Up"}
           </button>
         </form>
@@ -148,7 +134,7 @@ export default function RegisterPage() {
           Continue with Google
         </button>
 
-        <p className="mt-6 text-center text-slate-400 text-sm font-medium">
+        <p className="mt-6 text-center text-slate-400 text-sm">
           Already have an account? <Link href="/login" className="text-cyan-400 font-bold hover:underline">Login Now</Link>
         </p>
       </div>

@@ -2,8 +2,6 @@
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { storage } from "@/lib/firebase"; 
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import Link from "next/link";
 
 export default function RegisterPage() {
@@ -14,7 +12,7 @@ export default function RegisterPage() {
   const [preview, setPreview] = useState(null);
   const [uploading, setUploading] = useState(false);
 
-  const { registerWithEmail, loginWithGoogle, updateUser } = useAuth();
+  const { registerWithEmail, updateUser, loginWithGoogle } = useAuth();
   const router = useRouter();
 
   const handleImageChange = (e) => {
@@ -31,68 +29,67 @@ export default function RegisterPage() {
     
     setUploading(true);
     try {
-      const userCredential = await registerWithEmail(email, password);
-      const user = userCredential.user;
-
       let photoURL = "";
-      
+
       if (image) {
-        try {
-          const imageRef = ref(storage, `profiles/${user.uid}`);
-          const uploadResult = await uploadBytes(imageRef, image);
-          photoURL = await getDownloadURL(uploadResult.ref);
-        } catch (storageErr) {
-          console.error("Storage Error:", storageErr);
-          photoURL = `https://ui-avatars.com/api/?name=${displayName.replace(/\s+/g, '+')}&background=0ea5e9&color=fff`;
+        const formData = new FormData();
+        formData.append("file", image);
+        formData.append("upload_preset", "bsibg-preset"); 
+        
+        // Error handling shoho fetch
+        const res = await fetch(
+          `https://api.cloudinary.com/v1_1/dyzfniecr/image/upload`,
+          { 
+            method: "POST", 
+            body: formData 
+          }
+        ).catch(err => {
+          throw new Error("Network error: Please check your internet or disable Ad-blocker.");
+        });
+        
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.error.message || "Cloudinary upload failed");
         }
+
+        const data = await res.json();
+        photoURL = data.secure_url;
       } else {
         photoURL = `https://ui-avatars.com/api/?name=${displayName.replace(/\s+/g, '+')}&background=0ea5e9&color=fff`;
       }
 
+      await registerWithEmail(email, password);
       await updateUser(displayName, photoURL);
 
-      window.location.href = "/"; 
+      router.push("/");
 
     } catch (err) {
-      console.error("Reg Error:", err);
+      console.error("Full Error Details:", err);
       alert(err.message);
     } finally {
       setUploading(false);
     }
   };
 
-  const handleGoogleSignup = async () => {
-    try {
-      await loginWithGoogle();
-      window.location.href = "/";
-    } catch (err) {
-      alert(err.message);
-    }
-  };
-
   return (
-    <div className="flex items-center justify-center min-h-screen py-10 px-4 bg-[#020617]">
-      <div className="bg-[#1e293b]/30 backdrop-blur-2xl p-8 rounded-[2.5rem] shadow-2xl w-full max-w-lg border border-slate-700/50 relative overflow-hidden">
-        
-        {/* Glow Effects */}
-        <div className="absolute -top-24 -right-24 w-64 h-64 bg-cyan-500/10 blur-[120px]"></div>
+    <div className="flex items-center justify-center min-h-[90vh] px-4 py-5 bg-[#020617]">
+      <div className="bg-[#1e293b]/50 backdrop-blur-xl p-8 rounded-3xl shadow-2xl w-full max-w-md border border-slate-700/50">
         
         <div className="text-center mb-8">
-          <h2 className="text-4xl font-black text-white tracking-tighter uppercase italic">
-            Join the <span className="text-transparent bg-clip-text bg-linear-to-r from-cyan-400 to-indigo-500">Crew</span>
-          </h2>
-          <p className="text-slate-400 mt-2 font-medium">BSIBG Hub - Bangladesh Gaming Community</p>
+          <h2 className="text-3xl font-extrabold text-white">Create <span className="text-cyan-400">Account</span></h2>
+          <p className="text-slate-400 mt-2">Join to share and download mods</p>
         </div>
 
-        <form onSubmit={handleRegister} className="space-y-6">
-          {/* Avatar Upload Container */}
+        <form onSubmit={handleRegister} className="space-y-5">
           <div className="flex flex-col items-center gap-4 mb-2">
-            <div className="relative group w-28 h-28">
-              <div className="w-full h-full rounded-full border-2 border-indigo-500/50 p-1 group-hover:border-cyan-400 transition-all duration-300 overflow-hidden bg-slate-800">
+            <div className="relative group w-20 h-20">
+              <div className="w-full h-full rounded-full border border-slate-600 bg-[#0f172a] flex items-center justify-center overflow-hidden">
                 {preview ? (
                   <img src={preview} alt="Preview" className="w-full h-full object-cover" />
                 ) : (
-                  <div className="flex items-center justify-center h-full text-slate-500 text-xs">Upload Photo</div>
+                  <svg className="w-8 h-8 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
                 )}
               </div>
               <input 
@@ -102,28 +99,28 @@ export default function RegisterPage() {
                 onChange={handleImageChange}
               />
             </div>
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest italic">Driver Identity Photo</span>
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Profile Photo</span>
           </div>
 
           <div className="space-y-4">
             <input 
               type="text" 
               placeholder="Gaming Name"
-              className="w-full bg-[#0f172a] border border-slate-700 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-cyan-500 outline-none text-white transition-all"
+              className="w-full bg-[#0f172a] border border-slate-600 rounded-xl px-4 py-3 focus:ring-2 focus:ring-cyan-500 outline-none transition-all text-white placeholder:text-slate-500"
               onChange={(e) => setDisplayName(e.target.value)}
               required
             />
             <input 
               type="email" 
-              placeholder="Email"
-              className="w-full bg-[#0f172a] border border-slate-700 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-cyan-500 outline-none text-white transition-all"
+              placeholder="Email Address"
+              className="w-full bg-[#0f172a] border border-slate-600 rounded-xl px-4 py-3 focus:ring-2 focus:ring-cyan-500 outline-none transition-all text-white placeholder:text-slate-500"
               onChange={(e) => setEmail(e.target.value)}
               required
             />
             <input 
               type="password" 
               placeholder="Password"
-              className="w-full bg-[#0f172a] border border-slate-700 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-cyan-500 outline-none text-white transition-all"
+              className="w-full bg-[#0f172a] border border-slate-600 rounded-xl px-4 py-3 focus:ring-2 focus:ring-cyan-500 outline-none transition-all text-white placeholder:text-slate-500"
               onChange={(e) => setPassword(e.target.value)}
               required
             />
@@ -131,36 +128,29 @@ export default function RegisterPage() {
 
           <button 
             disabled={uploading}
-            className="group relative w-full overflow-hidden rounded-2xl p-0.5 transition-all hover:shadow-[0_0_20px_rgba(34,211,238,0.4)]"
+            className="w-full bg-linear-to-r from-cyan-500 to-indigo-600 py-3 rounded-xl font-bold text-white shadow-lg shadow-cyan-500/30 hover:scale-[1.02] transition-transform disabled:opacity-50 disabled:scale-100"
           >
-            <div className="absolute inset-0 bg-linear-to-r from-cyan-500 via-indigo-500 to-purple-600 animate-gradient-x group-hover:animate-pulse"></div>
-            <div className="relative flex h-full w-full items-center justify-center bg-slate-950 rounded-[14px] py-4 transition-all group-hover:bg-transparent">
-              <span className="font-black text-white tracking-widest uppercase">
-                {uploading ? "SYNCING DATA..." : "CREATE PROFILE"}
-              </span>
-            </div>
+            {uploading ? "Registering..." : "Sign Up"}
           </button>
         </form>
 
-        <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-800"></div></div>
-          <div className="relative flex justify-center text-[10px] uppercase tracking-[0.2em] font-bold"><span className="bg-[#131b2b] px-4 text-slate-500 italic">Quick Setup</span></div>
+        <div className="relative my-8">
+          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-700"></div></div>
+          <div className="relative flex justify-center text-xs uppercase"><span className="bg-[#1e293b] px-2 text-slate-500 font-bold tracking-widest">OR</span></div>
         </div>
 
         <button 
-          onClick={handleGoogleSignup}
+          onClick={async () => { await loginWithGoogle(); router.push("/"); }}
           type="button"
-          className="w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-3 border border-slate-700 hover:bg-white hover:text-black transition-all duration-300"
+          className="w-full bg-slate-800 hover:bg-slate-700 py-3 rounded-xl font-semibold flex items-center justify-center gap-3 border border-slate-600 transition-colors text-white"
         >
           <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5" alt="google" />
-          GOOGLE SIGNUP
+          Continue with Google
         </button>
 
-        <div className="mt-8 text-center">
-          <p className="text-slate-500 text-sm font-medium">
-            Already a driver? <Link href="/login" className="text-cyan-400 font-bold hover:text-white">Sign In</Link>
-          </p>
-        </div>
+        <p className="mt-6 text-center text-slate-400 text-sm font-medium">
+          Already have an account? <Link href="/login" className="text-cyan-400 font-bold hover:underline">Login Now</Link>
+        </p>
       </div>
     </div>
   );

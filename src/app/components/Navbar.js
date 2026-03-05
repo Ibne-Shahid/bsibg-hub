@@ -1,12 +1,12 @@
 "use client";
-import { useState, useEffect, useRef } from 'react'; 
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from "@/context/AuthContext"; 
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false); 
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { user, logOut } = useAuth(); 
   const dropdownRef = useRef(null);
 
@@ -30,14 +30,14 @@ const Navbar = () => {
               <div className="relative h-10 w-10 p-0.5 rounded-full bg-linear-to-r from-cyan-400 to-indigo-500">
                 <Image 
                   src="/Gemini_Generated_Image_pc55zdpc55zdpc55.png" 
-                  alt="BSIBG Logo"
+                  alt="Logo"
                   width={40}
                   height={40}
                   className="rounded-full bg-[#0f172a]"
                 />
               </div>
               <span className="text-2xl font-black tracking-tighter text-transparent bg-clip-text bg-linear-to-r from-cyan-400 to-indigo-500">
-                BSIBG<span className="text-white ml-1 text-sm font-light uppercase tracking-widest">Hub</span>
+                BSIBG<span className="text-white ml-1 text-sm font-light uppercase tracking-widest">Family</span>
               </span>
             </Link>
           </div>
@@ -56,7 +56,7 @@ const Navbar = () => {
                 
                 <div className="relative" ref={dropdownRef}>
                   <button 
-                    onClick={() => setIsProfileOpen(!isProfileOpen)} // Hover er bodole click toggle
+                    onClick={() => setIsProfileOpen(!isProfileOpen)}
                     className="flex items-center gap-2 outline-none focus:ring-2 focus:ring-cyan-500 rounded-full transition-all"
                   >
                     <img 
@@ -66,18 +66,15 @@ const Navbar = () => {
                     />
                   </button>
 
-                  {/* Dropdown Menu - State based display */}
                   {isProfileOpen && (
                     <div className="absolute right-0 mt-3 w-56 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl py-2 animate-in fade-in zoom-in-95 duration-200">
                       <div className="px-4 py-3 border-b border-slate-800">
                         <p className="text-sm font-bold text-white truncate">{user.displayName || "Driver"}</p>
                         <p className="text-[10px] text-slate-500 truncate">{user.email}</p>
                       </div>
-                      
-                      <Link href="/profile" className="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-cyan-400 transition">
+                      <Link href="/profile" onClick={() => setIsProfileOpen(false)} className="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-cyan-400 transition">
                         My Profile
                       </Link>
-                      
                       <button 
                         onClick={() => {
                           logOut();
@@ -93,12 +90,8 @@ const Navbar = () => {
               </div>
             ) : (
               <div className="flex items-center gap-3">
-                <Link href="/login" className="text-sm font-semibold text-slate-300 hover:text-white transition">
-                  Login
-                </Link>
-                <Link href="/register" className="bg-white/10 border border-white/20 px-5 py-2 rounded-full text-sm font-semibold hover:bg-white/20 transition-all">
-                  Register
-                </Link>
+                <Link href="/login" className="text-sm font-semibold text-slate-300 hover:text-white transition">Login</Link>
+                <Link href="/register" className="bg-white/10 border border-white/20 px-5 py-2 rounded-full text-sm font-semibold hover:bg-white/20 transition-all">Register</Link>
               </div>
             )}
           </div>
@@ -113,20 +106,18 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
-      <div className={`${isOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'} md:hidden bg-[#0f172a] border-b border-slate-700 overflow-hidden transition-all duration-300`}>
-        <div className="px-4 pt-2 pb-6 space-y-3 flex flex-col">
+      <div className={`${isOpen ? 'max-h-screen opacity-100 py-4' : 'max-h-0 opacity-0'} md:hidden bg-[#0f172a] border-b border-slate-700 overflow-hidden transition-all duration-300`}>
+        <div className="px-4 space-y-3 flex flex-col">
           <Link href="/" onClick={() => setIsOpen(false)} className="py-2 text-slate-300 border-b border-slate-800/50">Home</Link>
           <Link href="/mods" onClick={() => setIsOpen(false)} className="py-2 text-slate-300 border-b border-slate-800/50">All Mods</Link>
-          
           {user ? (
              <>
                <div className="flex items-center gap-3 py-2 border-b border-slate-800/50">
-                 <img src={user.photoURL} className="h-8 w-8 rounded-full" alt="user" />
+                 <img src={user.photoURL} className="h-8 w-8 rounded-full object-cover" alt="user" />
                  <span className="text-sm font-bold">{user.displayName}</span>
                </div>
                <Link href="/upload" onClick={() => setIsOpen(false)} className="py-2 text-cyan-400">Upload Mod</Link>
-               <button onClick={logOut} className="text-left py-2 text-red-400 font-bold">Logout</button>
+               <button onClick={() => { logOut(); setIsOpen(false); }} className="text-left py-2 text-red-400 font-bold">Logout</button>
              </>
           ) : (
             <div className="flex flex-col gap-3 pt-2">

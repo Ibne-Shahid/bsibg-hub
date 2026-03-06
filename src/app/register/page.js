@@ -57,7 +57,7 @@ export default function RegisterPage() {
           name: displayName,
           email: email,
           photoURL: photoURL,
-          role: 'gamer'
+          role: 'user'
         };
 
         const dbRes = await fetch('http://localhost:5000/users', {

@@ -2,15 +2,27 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import { useAuth } from "@/context/AuthContext"; 
+import { FiLayout, FiLogOut, FiChevronDown } from 'react-icons/fi';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const { user, logOut } = useAuth(); 
+  const [shouldHide, setShouldHide] = useState(false); 
+  
+  const { user, dbUser, logOut } = useAuth(); 
   const dropdownRef = useRef(null);
+  const pathname = usePathname();
 
   useEffect(() => {
+   
+    if (pathname && pathname.startsWith("/dashboard")) {
+      setShouldHide(true);
+    } else {
+      setShouldHide(false);
+    }
+
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsProfileOpen(false);
@@ -18,7 +30,9 @@ const Navbar = () => {
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [pathname]); 
+
+  if (shouldHide) return null;
 
   return (
     <nav className="bg-[#0f172a] text-white border-b border-slate-700 sticky top-0 z-50 shadow-2xl">
@@ -46,43 +60,48 @@ const Navbar = () => {
             <Link href="/" className="text-slate-300 hover:text-cyan-400 transition-colors font-medium">Home</Link>
             <Link href="/mods" className="text-slate-300 hover:text-cyan-400 transition-colors font-medium">All Mods</Link>
             
+            {user && (
+              <Link href="/dashboard" className="flex items-center gap-2 text-cyan-400 hover:text-cyan-300 transition-colors font-bold">
+                <FiLayout className="text-lg" /> Dashboard
+              </Link>
+            )}
+
             <div className="h-6 w-px bg-slate-700 mx-2"></div>
 
             {user ? (
               <div className="flex items-center gap-4">
-                <Link href="/upload" className="bg-linear-to-r from-cyan-500 to-indigo-600 px-4 py-1.5 rounded-full text-xs font-bold hover:shadow-[0_0_15px_rgba(34,211,238,0.4)] transition-all">
+                <Link href="/dashboard/upload" className="bg-linear-to-r from-cyan-500 to-indigo-600 px-4 py-1.5 rounded-full text-xs font-bold hover:shadow-[0_0_15px_rgba(34,211,238,0.4)] transition-all">
                   Upload
                 </Link>
                 
                 <div className="relative" ref={dropdownRef}>
                   <button 
                     onClick={() => setIsProfileOpen(!isProfileOpen)}
-                    className="flex items-center gap-2 outline-none focus:ring-2 focus:ring-cyan-500 rounded-full transition-all"
+                    className="flex items-center gap-2 p-1 pr-3 bg-slate-800/50 border border-slate-700 rounded-full transition-all hover:border-cyan-500/50"
                   >
                     <img 
                       src={user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName || 'User'}&background=22d3ee&color=fff`} 
                       alt="User" 
-                      className="h-9 w-9 rounded-full border-2 border-cyan-400 shadow-md object-cover"
+                      className="h-8 w-8 rounded-full border border-cyan-400 shadow-md object-cover"
                     />
+                    <FiChevronDown className={`text-slate-400 transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} />
                   </button>
 
                   {isProfileOpen && (
-                    <div className="absolute right-0 mt-3 w-56 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl py-2 animate-in fade-in zoom-in-95 duration-200">
-                      <div className="px-4 py-3 border-b border-slate-800">
-                        <p className="text-sm font-bold text-white truncate">{user.displayName || "Driver"}</p>
-                        <p className="text-[10px] text-slate-500 truncate">{user.email}</p>
+                    <div className="absolute right-0 mt-3 w-48 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl py-2 animate-in fade-in zoom-in-95 duration-200">
+                      <div className="px-4 py-2 border-b border-slate-800">
+                        <p className="text-xs font-bold text-white truncate">{user.displayName || "Driver"}</p>
+                        <p className="text-[9px] text-slate-500 truncate uppercase tracking-tighter">{dbUser?.role || "Member"}</p>
                       </div>
-                      <Link href="/profile" onClick={() => setIsProfileOpen(false)} className="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-cyan-400 transition">
-                        My Profile
-                      </Link>
+                      
                       <button 
                         onClick={() => {
                           logOut();
                           setIsProfileOpen(false);
                         }} 
-                        className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 transition"
+                        className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 transition flex items-center gap-2"
                       >
-                        Logout
+                        <FiLogOut /> Logout
                       </button>
                     </div>
                   )}
@@ -110,14 +129,15 @@ const Navbar = () => {
         <div className="px-4 space-y-3 flex flex-col">
           <Link href="/" onClick={() => setIsOpen(false)} className="py-2 text-slate-300 border-b border-slate-800/50">Home</Link>
           <Link href="/mods" onClick={() => setIsOpen(false)} className="py-2 text-slate-300 border-b border-slate-800/50">All Mods</Link>
+          
           {user ? (
              <>
-               <div className="flex items-center gap-3 py-2 border-b border-slate-800/50">
-                 <img src={user.photoURL} className="h-8 w-8 rounded-full object-cover" alt="user" />
-                 <span className="text-sm font-bold">{user.displayName}</span>
-               </div>
-               <Link href="/upload" onClick={() => setIsOpen(false)} className="py-2 text-cyan-400">Upload Mod</Link>
-               <button onClick={() => { logOut(); setIsOpen(false); }} className="text-left py-2 text-red-400 font-bold">Logout</button>
+               <Link href="/dashboard" onClick={() => setIsOpen(false)} className="py-2 text-cyan-400 flex items-center gap-2 font-bold">
+                 <FiLayout /> Dashboard
+               </Link>
+               <button onClick={() => { logOut(); setIsOpen(false); }} className="text-left py-2 text-red-400 font-bold flex items-center gap-2">
+                 <FiLogOut /> Logout
+               </button>
              </>
           ) : (
             <div className="flex flex-col gap-3 pt-2">

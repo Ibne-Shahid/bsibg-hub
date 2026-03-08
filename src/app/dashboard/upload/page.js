@@ -43,7 +43,7 @@ const UploadMod = () => {
             });
         }
         
-        setLoading(true); // 🟢 Start Loader
+        setLoading(true); 
         try {
             const uploadedImageUrls = [];
             for (const file of images) {
@@ -156,7 +156,7 @@ const UploadMod = () => {
                             <FiLink /> Links & Credits
                         </label>
                         <input 
-                            type="url" value={formData.downloadUrl} placeholder="Google Drive / Mega Link" required
+                            type="url" value={formData.downloadUrl} placeholder="Google Drive Link" required
                             className="w-full bg-slate-950/50 border border-slate-800 rounded-2xl px-5 py-3.5 text-white outline-none focus:border-cyan-500 transition-all font-bold text-sm"
                             onChange={(e) => setFormData({...formData, downloadUrl: e.target.value})}
                         />

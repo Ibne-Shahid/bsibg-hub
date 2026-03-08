@@ -1,10 +1,60 @@
 "use client";
+import { useState } from "react";
 import Link from "next/link";
-import { FiYoutube, FiFacebook, FiGlobe, FiArrowUpRight } from "react-icons/fi";
+import { FiYoutube, FiFacebook, FiGlobe, FiArrowUpRight, FiLoader } from "react-icons/fi";
 import { motion } from "framer-motion";
+import Swal from 'sweetalert2';
 
 const Footer = () => {
     const currentYear = new Date().getFullYear();
+    const [email, setEmail] = useState("");
+    const [loading, setLoading] = useState(false);
+
+    const handleSubscribe = async (e) => {
+        e.preventDefault();
+        if (!email) return;
+
+        setLoading(true);
+        try {
+            const res = await fetch("http://localhost:5000/subscribe", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email })
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                Swal.fire({
+                    title: 'ALERT INITIALIZED!',
+                    text: data.message || 'Redirecting to Community Hub...',
+                    icon: 'success',
+                    background: '#1e293b',
+                    color: '#fff',
+                    confirmButtonColor: '#0891b2',
+                    timer: 2500
+                });
+
+                setEmail("");
+
+                setTimeout(() => {
+                    window.open("https://www.facebook.com/groups/986541809388996/?ref=share_group_link&rdid=I9JOBODJZ7c2SXxE&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2Fg%2F1CamGefVsB#", "_blank");
+                }, 2000);
+            } else {
+                throw new Error(data.message || "Something went wrong");
+            }
+        } catch (err) {
+            Swal.fire({
+                title: 'Error',
+                text: err.message,
+                icon: 'error',
+                background: '#1e293b',
+                color: '#fff'
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const containerVariants = {
         hidden: { opacity: 0, y: 20 },
@@ -42,15 +92,21 @@ const Footer = () => {
                             The premier destination for high-fidelity bus modifications and skins for the simulation community. Built by drivers, for drivers.
                         </p>
                         <div className="flex gap-4">
-                            {[FiFacebook, FiYoutube, FiGlobe].map((Icon, i) => (
+                            {[
+                                { Icon: FiFacebook, link: "https://www.facebook.com/profile.php?id=61573062783592&rdid=wI0mWMkBHNOTOxc5&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1GhQXsy8qU#" },
+                                { Icon: FiYoutube, link: "https://www.youtube.com/@bsibg_family" },
+                                { Icon: FiGlobe, link: "https://yourwebsite.com" }
+                            ].map((item, i) => (
                                 <motion.a
                                     key={i}
                                     whileHover={{ scale: 1.1, y: -5 }}
                                     whileTap={{ scale: 0.9 }}
-                                    href="#"
+                                    href={item.link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                     className="p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-400 hover:text-cyan-500 hover:border-cyan-500/50 transition-all shadow-lg"
                                 >
-                                    <Icon size={18} />
+                                    <item.Icon size={18} />
                                 </motion.a>
                             ))}
                         </div>
@@ -93,23 +149,28 @@ const Footer = () => {
 
                         <h4 className="text-white font-black uppercase text-xs tracking-[0.3em] mb-4 italic">Dispatch Center</h4>
                         <p className="text-slate-500 text-xs mb-6 font-medium">
-                            Join <span className="text-white font-bold">1,000+ drivers</span> from our Facebook community for early access to premium skins.
+                            Join <span className="text-white font-bold">10k+ drivers</span> from our Facebook community for early access to premium skins.
                         </p>
 
-                        <div className="space-y-3">
+                        <form onSubmit={handleSubscribe} className="space-y-3">
                             <input
                                 type="email"
+                                required
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                                 placeholder="YOUR EMAIL"
                                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-[10px] font-black text-white focus:border-cyan-500 outline-none transition-all placeholder:text-slate-700 uppercase"
                             />
                             <motion.button
+                                type="submit"
+                                disabled={loading}
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
-                                className="w-full bg-cyan-600 hover:bg-cyan-500 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-black transition-all shadow-xl shadow-cyan-900/20"
+                                className="w-full bg-cyan-600 hover:bg-cyan-500 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-black transition-all shadow-xl shadow-cyan-900/20 flex items-center justify-center gap-2"
                             >
-                                Initialize Alert
+                                {loading ? <FiLoader className="animate-spin" /> : "Initialize Alert"}
                             </motion.button>
-                        </div>
+                        </form>
                     </motion.div>
                 </div>
 

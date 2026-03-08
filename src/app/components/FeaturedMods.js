@@ -106,7 +106,7 @@ const FeaturedMods = () => {
         {!loading && mods.length > 0 && (
           <div className="mt-16 text-center">
             <Link 
-              href="/all-mods" 
+              href="/mods&skins" 
               className="group inline-flex flex-col items-center"
             >
               <span className="text-slate-500 group-hover:text-cyan-500 font-black uppercase tracking-[0.3em] text-[10px] transition-all">

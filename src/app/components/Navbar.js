@@ -58,7 +58,7 @@ const Navbar = () => {
 
           <div className="hidden md:flex space-x-6 items-center">
             <Link href="/" className="text-slate-300 hover:text-cyan-400 transition-colors font-medium">Home</Link>
-            <Link href="/mods" className="text-slate-300 hover:text-cyan-400 transition-colors font-medium">Mods & Skins</Link>
+            <Link href="/mods&skins" className="text-slate-300 hover:text-cyan-400 transition-colors font-medium">Mods & Skins</Link>
             
             {user && (
               <Link href="/dashboard" className="flex items-center gap-2 text-cyan-400 hover:text-cyan-300 transition-colors font-bold">
@@ -125,7 +125,7 @@ const Navbar = () => {
       <div className={`${isOpen ? 'max-h-screen opacity-100 py-4' : 'max-h-0 opacity-0'} md:hidden bg-[#0f172a] border-b border-slate-700 overflow-hidden transition-all duration-300`}>
         <div className="px-4 space-y-3 flex flex-col">
           <Link href="/" onClick={() => setIsOpen(false)} className="py-2 text-slate-300 border-b border-slate-800/50">Home</Link>
-          <Link href="/mods" onClick={() => setIsOpen(false)} className="py-2 text-slate-300 border-b border-slate-800/50">All Mods</Link>
+          <Link href="/mods&skins" onClick={() => setIsOpen(false)} className="py-2 text-slate-300 border-b border-slate-800/50">All Mods</Link>
           
           {user ? (
              <>

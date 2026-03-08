@@ -1,11 +1,13 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { FiUploadCloud, FiLink, FiUser, FiInfo, FiLayers, FiX, FiLoader } from "react-icons/fi";
+import { useRouter } from "next/navigation";
+import { FiUploadCloud, FiLink, FiInfo, FiLayers, FiX, FiLoader } from "react-icons/fi";
 import Swal from 'sweetalert2';
 
 const UploadMod = () => {
-    const { dbUser } = useAuth();
+    const { dbUser, loading: authLoading } = useAuth();
+    const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [images, setImages] = useState([]); 
     const [previews, setPreviews] = useState([]); 
@@ -17,6 +19,25 @@ const UploadMod = () => {
         downloadUrl: "",
         creatorName: ""
     });
+
+    useEffect(() => {
+        if (!authLoading) {
+            if (!dbUser?.email) {
+                router.push("/login");
+            } 
+            else if (dbUser?.role !== 'admin' && dbUser?.role !== 'moderator') {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Access Denied',
+                    text: 'Only Admins and Moderators can publish assets!',
+                    background: '#1e293b',
+                    color: '#fff',
+                    confirmButtonColor: '#0891b2'
+                });
+                router.push("/");
+            }
+        }
+    }, [dbUser, authLoading, router]);
 
     const handleImageChange = (e) => {
         const files = Array.from(e.target.files);
@@ -62,7 +83,8 @@ const UploadMod = () => {
             const finalData = {
                 ...formData,
                 images: uploadedImageUrls,
-                uploaderEmail: dbUser?.email
+                uploaderEmail: dbUser?.email,
+                status: 'pending' 
             };
 
             const response = await fetch("http://localhost:5000/upload-mod", {
@@ -89,21 +111,24 @@ const UploadMod = () => {
             }
         } catch (err) {
             console.error(err);
-            Swal.fire({
-                icon: 'error',
-                title: 'Upload Failed',
-                text: 'Something went wrong with the server.',
-                background: '#1e293b',
-                color: '#fff'
-            });
+            Swal.fire({ icon: 'error', title: 'Upload Failed', background: '#1e293b', color: '#fff' });
         } finally {
             setLoading(false); 
         }
     };
 
+    if (authLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-[#020617]">
+                <FiLoader className="text-4xl text-cyan-500 animate-spin" />
+            </div>
+        );
+    }
+
+    if (dbUser?.role !== 'admin' && dbUser?.role !== 'moderator') return null;
+
     return (
-        <div className="relative max-w-4xl mx-auto space-y-8 min-h-screen">
-            
+        <div className="relative max-w-4xl mx-auto space-y-8 min-h-screen pb-20">
             {loading && (
                 <div className="fixed inset-0 z-100 flex flex-col items-center justify-center bg-[#020617]/80 backdrop-blur-md">
                     <div className="relative w-20 h-20">
@@ -120,7 +145,7 @@ const UploadMod = () => {
                 <h1 className="text-4xl font-black italic tracking-tighter text-white">
                     PUBLISH <span className="text-cyan-500">ASSETS</span>
                 </h1>
-                <p className="text-slate-400 font-medium">Add high-quality mods or skins to the BSIBG store.</p>
+                <p className="text-slate-400 font-medium italic">Welcome back, {dbUser?.role}. Ready to expand the hangar?</p>
             </header>
 
             <form onSubmit={handleSubmit} className={`grid grid-cols-1 md:grid-cols-2 gap-8 transition-all duration-500 ${loading ? "scale-95 opacity-30 pointer-events-none" : "scale-100"}`}>
@@ -168,6 +193,7 @@ const UploadMod = () => {
                     </div>
                 </div>
 
+                {/* Media Section */}
                 <div className="bg-slate-900/40 p-8 rounded-[2.5rem] border border-slate-800 flex flex-col shadow-2xl">
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4 flex items-center gap-2">
                         <FiLayers /> Media Gallery (Multiple)
@@ -175,14 +201,14 @@ const UploadMod = () => {
                     
                     <div className="relative group border-2 border-dashed border-slate-800 hover:border-cyan-500/50 rounded-3xl p-10 transition-all flex flex-col items-center justify-center gap-3 bg-slate-950/20">
                         <FiUploadCloud className="text-5xl text-slate-700 group-hover:text-cyan-500 transition-all group-hover:scale-110" />
-                        <p className="text-slate-500 font-bold text-xs uppercase tracking-widest">Select Screenshots</p>
+                        <p className="text-slate-500 font-bold text-xs uppercase tracking-widest text-center">Select Screenshots</p>
                         <input type="file" multiple accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer" onChange={handleImageChange} />
                     </div>
 
                     <div className="grid grid-cols-2 gap-3 mt-6">
                         {previews.map((src, i) => (
                             <div key={i} className="relative group aspect-video rounded-xl overflow-hidden border border-slate-800">
-                                <img src={src} className="w-full h-full object-cover" />
+                                <img src={src} className="w-full h-full object-cover" alt="preview" />
                                 <button type="button" onClick={() => removeImage(i)} className="absolute top-2 right-2 p-1.5 bg-red-500/80 rounded-lg text-white opacity-0 group-hover:opacity-100 transition-all">
                                     <FiX size={14} />
                                 </button>
@@ -192,6 +218,7 @@ const UploadMod = () => {
 
                     <div className="mt-auto pt-8">
                         <button 
+                            type="submit"
                             disabled={loading}
                             className="w-full bg-cyan-600 hover:bg-cyan-500 py-4 rounded-2xl font-black text-black shadow-xl shadow-cyan-900/20 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 uppercase italic tracking-widest text-sm"
                         >

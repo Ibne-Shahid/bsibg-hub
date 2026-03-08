@@ -58,7 +58,7 @@ const Navbar = () => {
 
           <div className="hidden md:flex space-x-6 items-center">
             <Link href="/" className="text-slate-300 hover:text-cyan-400 transition-colors font-medium">Home</Link>
-            <Link href="/mods" className="text-slate-300 hover:text-cyan-400 transition-colors font-medium">All Mods</Link>
+            <Link href="/mods" className="text-slate-300 hover:text-cyan-400 transition-colors font-medium">Mods & Skins</Link>
             
             {user && (
               <Link href="/dashboard" className="flex items-center gap-2 text-cyan-400 hover:text-cyan-300 transition-colors font-bold">
@@ -70,9 +70,6 @@ const Navbar = () => {
 
             {user ? (
               <div className="flex items-center gap-4">
-                <Link href="/dashboard/upload" className="bg-linear-to-r from-cyan-500 to-indigo-600 px-4 py-1.5 rounded-full text-xs font-bold hover:shadow-[0_0_15px_rgba(34,211,238,0.4)] transition-all">
-                  Upload
-                </Link>
                 
                 <div className="relative" ref={dropdownRef}>
                   <button 

@@ -12,7 +12,7 @@ const Sidebar = () => {
   const router = useRouter(); 
 
   const menuItems = [
-    { name: "Overview", icon: <FiGrid />, path: "/dashboard", roles: ["admin", "moderator", "user"] },
+    { name: "Overview", icon: <FiGrid />, path: "/dashboard", roles: ["admin", "moderator", "user", "gamer"] },
     { name: "Upload Mod", icon: <FiPlusCircle />, path: "/dashboard/upload", roles: ["admin", "moderator"] },
     { name: "Manage Users", icon: <FiUsers />, path: "/dashboard/users", roles: ["admin"] },
   ];
@@ -32,26 +32,22 @@ const Sidebar = () => {
     <>
       <button 
         onClick={toggleSidebar}
-        className="lg:hidden fixed top-4 left-4 z-70 p-3 bg-cyan-600 text-black rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-all"
+        className="lg:hidden fixed top-4 left-4 z-70 p-3 bg-cyan-600 text-black rounded-xl shadow-lg transition-all"
       >
         {isOpen ? <FiX size={24} /> : <FiMenu size={24} />}
       </button>
 
-      {/* Mobile Overlay */}
       {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black/80 backdrop-blur-md z-55 lg:hidden"
-          onClick={toggleSidebar}
-        ></div>
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-55 lg:hidden" onClick={toggleSidebar}></div>
       )}
 
       <aside className={`
         fixed inset-y-0 left-0 z-60 bg-[#0f172a] border-r border-slate-800 p-6 flex flex-col transition-all duration-500 ease-in-out
         ${isOpen ? "translate-x-0 w-72" : "-translate-x-full lg:translate-x-0 lg:w-64"}
       `}>
-        <div className="mb-10 px-4 mt-12 lg:mt-0">
-          <h2 className="text-2xl font-black text-white italic tracking-tighter">
-            BSIBG <span className="text-cyan-500 text-xs border border-cyan-500/30 px-2 py-0.5 rounded-md uppercase">Panel</span>
+        <div className="mb-10 px-4 mt-12 lg:mt-0 flex items-center gap-2">
+          <h2 className="text-2xl font-black text-white italic tracking-tighter uppercase">
+            BSIBG <span className="text-cyan-500 text-[10px] border border-cyan-500/30 px-2 py-0.5 rounded-md">Panel</span>
           </h2>
         </div>
 
@@ -67,9 +63,7 @@ const Sidebar = () => {
                 href={item.path}
                 onClick={() => setIsOpen(false)}
                 className={`flex items-center gap-3 px-5 py-3.5 rounded-2xl transition-all font-bold text-sm ${
-                  isActive 
-                  ? "bg-cyan-600 text-black shadow-xl shadow-cyan-600/20" 
-                  : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                  isActive ? "bg-cyan-600 text-black shadow-xl" : "text-slate-400 hover:text-white hover:bg-slate-800/50"
                 }`}
               >
                 <span className="text-xl">{item.icon}</span>
@@ -79,14 +73,18 @@ const Sidebar = () => {
           })}
         </nav>
 
+        {dbUser && (
+           <div className="mb-6 p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
+              <p className="text-white text-[10px] font-black truncate uppercase">{dbUser.name}</p>
+              <p className="text-cyan-500 text-[8px] font-bold uppercase tracking-widest">{dbUser.role}</p>
+           </div>
+        )}
+
         <div className="pt-6 border-t border-slate-800 space-y-2">
           <Link href="/" className="flex items-center gap-3 px-5 py-3 text-slate-400 hover:text-cyan-400 text-sm font-semibold transition-colors">
             <FiHome /> Back to Site
           </Link>
-          <button 
-            onClick={handleLogout} 
-            className="w-full flex items-center gap-3 px-5 py-3 text-red-400 hover:bg-red-500/10 rounded-2xl text-sm font-semibold transition-all cursor-pointer"
-          >
+          <button onClick={handleLogout} className="w-full flex items-center gap-3 px-5 py-3 text-red-400 hover:bg-red-500/10 rounded-2xl text-sm font-semibold transition-all">
             <FiLogOut /> Logout
           </button>
         </div>

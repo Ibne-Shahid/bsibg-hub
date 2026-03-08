@@ -1,8 +1,9 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Swal from 'sweetalert2';
 import { 
   FiLoader, 
   FiCheckCircle, 
@@ -22,7 +23,7 @@ export default function RegisterPage() {
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
   const [uploading, setUploading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false); // Password Toggle State
+  const [showPassword, setShowPassword] = useState(false);
 
   const { registerWithEmail, updateUser, loginWithGoogle } = useAuth();
   const router = useRouter();
@@ -45,9 +46,22 @@ export default function RegisterPage() {
   const handleRegister = async (e) => {
     e.preventDefault();
 
-    if (!displayName) return alert("Please enter your Gaming Name");
+    if (!displayName) {
+      return Swal.fire({
+        icon: 'warning',
+        title: 'NAME REQUIRED',
+        text: 'Please enter your Gaming Name to continue!',
+        background: '#1e293b', color: '#fff', confirmButtonColor: '#0891b2'
+      });
+    }
+
     if (!isPasswordValid(password)) {
-      return alert("Password does not meet requirements!");
+      return Swal.fire({
+        icon: 'error',
+        title: 'WEAK PASSWORD',
+        text: 'Check the requirements below!',
+        background: '#1e293b', color: '#fff', confirmButtonColor: '#ef4444'
+      });
     }
 
     setUploading(true);
@@ -59,10 +73,9 @@ export default function RegisterPage() {
         formData.append("upload_preset", "bsibg-preset");
         formData.append("file", image);
 
-        const res = await fetch(
-          `https://api.cloudinary.com/v1_1/dyzfniecr/image/upload`,
-          { method: "POST", body: formData }
-        );
+        const res = await fetch(`https://api.cloudinary.com/v1_1/dyzfniecr/image/upload`, { 
+          method: "POST", body: formData 
+        });
         const data = await res.json();
         if (res.ok) photoURL = data.secure_url;
       } else {
@@ -83,30 +96,58 @@ export default function RegisterPage() {
           role: 'user'
         };
 
-        const dbRes = await fetch('http://localhost:5000/users', {
+        await fetch('http://localhost:5000/users', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(userData)
         });
 
-        if (dbRes.ok) {
-          router.push("/");
-        } else {
-          router.push("/");
-        }
+        await Swal.fire({
+          icon: 'success',
+          title: 'WELCOME ABOARD!',
+          text: 'Registration successful. Ready to drive?',
+          background: '#1e293b', color: '#fff', confirmButtonColor: '#0891b2', timer: 2000, showConfirmButton: false
+        });
+        
+        router.push("/");
       }
 
     } catch (err) {
-      console.error(err);
-      alert(err.message);
+      Swal.fire({
+        icon: 'error',
+        title: 'REGISTRATION FAILED',
+        text: err.message,
+        background: '#1e293b', color: '#fff'
+      });
     } finally {
       setUploading(false);
     }
   };
 
+  const handleGoogleRegister = async () => {
+    setUploading(true);
+    try {
+      await loginWithGoogle(); 
+      await Swal.fire({
+        icon: 'success',
+        title: 'AUTHENTICATED',
+        text: 'Redirecting to your dashboard...',
+        background: '#1e293b', color: '#fff', timer: 2000, showConfirmButton: false
+      });
+      router.push("/");
+    } catch(e) {
+      setUploading(false);
+      Swal.fire({
+        icon: 'error',
+        title: 'CONNECTION ERROR',
+        text: 'Google authentication failed!',
+        background: '#1e293b', color: '#fff'
+      });
+    }
+  };
+
   return (
     <div className="relative flex items-center justify-center min-h-screen px-4 py-10 bg-[#020617] overflow-hidden">
-      
       {uploading && (
         <div className="fixed inset-0 z-100 flex flex-col items-center justify-center bg-[#020617]/80 backdrop-blur-md">
           <div className="relative w-20 h-20">
@@ -120,7 +161,6 @@ export default function RegisterPage() {
       )}
 
       <div className={`bg-[#1e293b]/30 backdrop-blur-2xl p-8 rounded-[2.5rem] shadow-2xl w-full max-w-md border border-slate-800 transition-all duration-500 ${uploading ? "scale-90 opacity-0" : "scale-100"}`}>
-        
         <div className="text-center mb-8">
           <h2 className="text-3xl font-black text-white italic tracking-tighter">
             JOIN THE <span className="text-cyan-500">CREW</span>
@@ -203,7 +243,7 @@ export default function RegisterPage() {
         </div>
 
         <button 
-          onClick={async () => { await loginWithGoogle(); router.push("/"); }}
+          onClick={handleGoogleRegister}
           type="button"
           className="w-full bg-slate-900/80 hover:bg-slate-800 py-3.5 rounded-2xl font-bold flex items-center justify-center gap-3 border border-slate-800 transition-all text-white text-sm"
         >

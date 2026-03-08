@@ -13,7 +13,11 @@ const FeaturedMods = () => {
     fetch("http://localhost:5000/all-assets")
       .then((res) => res.json())
       .then((data) => {
-        setMods(data);
+        const latestAssets = Array.isArray(data) 
+          ? [...data].reverse().slice(0, 3) 
+          : [];
+        
+        setMods(latestAssets);
         setLoading(false);
       })
       .catch((err) => {
@@ -41,7 +45,6 @@ const FeaturedMods = () => {
     <section className="py-24 bg-[#020617]">
       <div className="container mx-auto px-6">
         
-        {/* Header & Filters */}
         <div className="flex flex-col md:flex-row justify-between items-center mb-16 gap-8">
           <div>
             <h2 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter italic">
@@ -87,7 +90,7 @@ const FeaturedMods = () => {
                 >
                   <div className="relative h-64 overflow-hidden">
                     <img 
-                      src={mod.images[0]} 
+                      src={mod.images?.[0] || mod.image} 
                       alt={mod.title} 
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
                     />
@@ -100,11 +103,11 @@ const FeaturedMods = () => {
 
                   <div className="p-8">
                     <div className="flex justify-between items-start mb-4">
-                        <h3 className="text-xl font-bold text-white line-clamp-1">{mod.title}</h3>
+                        <h3 className="text-xl font-bold text-white line-clamp-1 uppercase italic tracking-tighter">{mod.title}</h3>
                     </div>
                     
-                    <p className="text-slate-500 text-xs font-medium mb-6 line-clamp-2">
-                        By <span className="text-slate-300 font-bold italic">{mod.creatorName}</span>
+                    <p className="text-slate-500 text-xs font-medium mb-6 line-clamp-2 uppercase">
+                        By <span className="text-slate-300 font-bold italic">{mod.creatorName || "BSIBG Driver"}</span>
                     </p>
 
                     <div className="flex gap-3">
@@ -121,7 +124,7 @@ const FeaturedMods = () => {
                         rel="noopener noreferrer"
                         className="flex-1 py-3 bg-cyan-600 hover:bg-cyan-500 text-black font-black uppercase text-[10px] tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-cyan-600/20 active:scale-95"
                       >
-                        <FiDownload /> Get Mod
+                        <FiDownload /> Get Asset
                       </a>
                     </div>
                   </div>
@@ -131,9 +134,17 @@ const FeaturedMods = () => {
           )}
         </motion.div>
 
+        {!loading && mods.length > 0 && (
+          <div className="mt-16 text-center">
+             <Link href="/all-mods" className="text-slate-500 hover:text-cyan-500 font-black uppercase tracking-[0.3em] text-[10px] transition-all border-b border-slate-800 pb-2">
+                Explore Full Hangar →
+             </Link>
+          </div>
+        )}
+
         {!loading && filteredMods.length === 0 && (
             <div className="text-center py-20 bg-slate-900/20 rounded-[3rem] border border-dashed border-slate-800">
-                <FiLoader className="mx-auto text-4xl text-slate-700 mb-4" />
+                <FiLoader className="mx-auto text-4xl text-slate-700 mb-4 animate-spin" />
                 <h3 className="text-slate-400 font-bold uppercase tracking-widest text-sm">No assets found in this category</h3>
             </div>
         )}

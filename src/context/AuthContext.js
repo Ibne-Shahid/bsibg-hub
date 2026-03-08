@@ -24,17 +24,15 @@ export const AuthProvider = ({ children }) => {
       name: currentUser.displayName,
       email: currentUser.email,
       photoURL: currentUser.photoURL,
-      role: 'gamer' 
+      role: 'user' 
     };
-
     try {
       const res = await fetch('http://localhost:5000/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData)
       });
-      const data = await res.json();
-      setDbUser(data);
+      return await res.json();
     } catch (err) {
       console.error("DB Save Error:", err);
     }
@@ -51,60 +49,52 @@ export const AuthProvider = ({ children }) => {
           setDbUser(data);
         } catch (err) {
           console.error("Error fetching user role:", err);
+        } finally {
+          setLoading(false);
         }
       } else {
         setDbUser(null);
+        setLoading(false);
       }
-      
-      setLoading(false);
     });
     return () => unsubscribe();
   }, []);
 
   const loginWithGoogle = async () => {
+    setLoading(true);
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
-      await saveUserToDb(result.user); 
+      const savedData = await saveUserToDb(result.user);
+      setDbUser(savedData);
       return result;
     } catch (error) {
-      console.error("Google Login Error:", error);
+      setLoading(false);
       throw error;
     }
   };
 
-  const registerWithEmail = (email, password) => 
-    createUserWithEmailAndPassword(auth, email, password);
-
-  const loginWithEmail = (email, password) => 
-    signInWithEmailAndPassword(auth, email, password);
-
-  const updateUser = async (displayName, photoURL) => {
-    if (auth.currentUser) {
-      try {
-        await updateProfile(auth.currentUser, { displayName, photoURL });
-        setUser({ ...auth.currentUser, displayName, photoURL });
-      } catch (error) {
-        console.error("Error updating profile:", error);
-      }
-    }
+  const registerWithEmail = (email, password) => {
+    setLoading(true);
+    return createUserWithEmailAndPassword(auth, email, password);
   };
 
-  const logOut = () => signOut(auth);
+  const loginWithEmail = (email, password) => {
+    setLoading(true);
+    return signInWithEmailAndPassword(auth, email, password);
+  };
+
+  const logOut = () => {
+    setLoading(true);
+    return signOut(auth);
+  };
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      dbUser, 
-      loading, 
-      loginWithGoogle, 
-      registerWithEmail, 
-      loginWithEmail, 
-      logOut, 
-      updateUser 
+    <AuthContext value={{ 
+      user, dbUser, loading, loginWithGoogle, registerWithEmail, loginWithEmail, logOut 
     }}>
-      {!loading && children}
-    </AuthContext.Provider>
+      {children}
+    </AuthContext>
   );
 };
 

@@ -37,7 +37,6 @@ const FeaturedMods = () => {
   return (
     <section className="py-24 bg-[#020617]">
       <div className="container mx-auto px-6">
-        
         <div className="mb-16">
           <h2 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter italic">
             BSIBG <span className="text-cyan-500">Showcase</span>
@@ -83,10 +82,10 @@ const FeaturedMods = () => {
 
                   <div className="flex gap-3">
                     <Link 
-                      href={`/mods/${mod._id}`} 
+                      href={`/mods&skins/${mod._id}`} 
                       className="flex-1 py-3 bg-white/5 hover:bg-white/10 text-white text-center font-black uppercase text-[10px] tracking-widest rounded-xl transition-all border border-white/5 flex items-center justify-center gap-2"
                     >
-                      <FiInfo /> Details
+                      <FiInfo /> View Specs
                     </Link>
                     <a 
                       href={mod.downloadUrl} 
@@ -102,20 +101,6 @@ const FeaturedMods = () => {
             ))
           )}
         </div>
-
-        {!loading && mods.length > 0 && (
-          <div className="mt-16 text-center">
-            <Link 
-              href="/mods&skins" 
-              className="group inline-flex flex-col items-center"
-            >
-              <span className="text-slate-500 group-hover:text-cyan-500 font-black uppercase tracking-[0.3em] text-[10px] transition-all">
-                Explore Full Hangar
-              </span>
-              <div className="w-10 h-px bg-slate-800 group-hover:w-24 group-hover:bg-cyan-500 transition-all mt-2"></div>
-            </Link>
-          </div>
-        )}
       </div>
     </section>
   );

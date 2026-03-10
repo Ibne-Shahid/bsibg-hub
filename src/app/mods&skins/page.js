@@ -1,7 +1,7 @@
 "use client";
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiDownload, FiInfo, FiLoader, FiFilter } from "react-icons/fi";
+import { FiDownload, FiInfo, FiLoader } from "react-icons/fi";
 import Link from "next/link";
 
 const AllAssets = () => {
@@ -16,7 +16,7 @@ const AllAssets = () => {
         setLoading(true);
 
         const currentPage = isNewCategory ? 1 : page;
-        
+
         try {
             const res = await fetch(`http://localhost:5000/all-assets?page=${currentPage}&limit=10&category=${category}`);
             const data = await res.json();
@@ -24,7 +24,12 @@ const AllAssets = () => {
             if (isNewCategory) {
                 setAssets(data.assets);
             } else {
-                setAssets(prev => [...prev, ...data.assets]);
+                setAssets(prev => {
+                    const newAssets = data.assets.filter(
+                        newAsset => !prev.some(existingAsset => existingAsset._id === newAsset._id)
+                    );
+                    return [...prev, ...newAssets];
+                });
             }
 
             setHasMore(data.hasMore);
@@ -53,7 +58,6 @@ const AllAssets = () => {
     return (
         <section className="min-h-screen bg-[#020617] py-20">
             <div className="container mx-auto px-6">
-                
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-16 gap-6">
                     <div>
                         <h1 className="text-5xl font-black text-white italic tracking-tighter uppercase">
@@ -67,11 +71,10 @@ const AllAssets = () => {
                             <button
                                 key={type}
                                 onClick={() => setCategory(type)}
-                                className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                                    category === type 
-                                    ? "bg-cyan-600 text-black shadow-lg shadow-cyan-600/30" 
-                                    : "text-slate-500 hover:text-white"
-                                }`}
+                                className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${category === type
+                                        ? "bg-cyan-600 text-black shadow-lg shadow-cyan-600/30"
+                                        : "text-slate-500 hover:text-white"
+                                    }`}
                             >
                                 {type}
                             </button>
@@ -90,13 +93,12 @@ const AllAssets = () => {
                                 className="group relative bg-slate-900/20 border border-slate-800/50 rounded-[3rem] overflow-hidden hover:border-cyan-500/40 transition-all duration-500"
                             >
                                 <div className="relative h-80 overflow-hidden">
-                                    <img 
-                                        src={item.images?.[0] || item.image} 
+                                    <img
+                                        src={item.images?.[0] || item.image}
                                         alt={item.title}
                                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
                                     />
                                     <div className="absolute inset-0 bg-linear-to-t from-[#020617] via-transparent to-transparent opacity-80"></div>
-                                    
                                     <div className="absolute top-8 left-8">
                                         <span className="px-5 py-2 bg-black/60 backdrop-blur-md border border-white/10 text-cyan-400 text-[10px] font-black uppercase rounded-full tracking-widest">
                                             {item.category}
@@ -114,18 +116,19 @@ const AllAssets = () => {
                                         </p>
 
                                         <div className="flex items-center gap-4">
-                                            <Link 
-                                                href={`/mods/${item._id}`}
+                                            <Link
+                                                href={`/mods&skins/${item._id}`}
                                                 className="flex-1 py-4 bg-white/5 hover:bg-white/10 text-white rounded-2xl flex items-center justify-center gap-2 font-black uppercase text-[10px] tracking-[0.2em] border border-white/5 transition-all"
                                             >
                                                 <FiInfo /> View Specs
                                             </Link>
-                                            <a 
+                                            <a
                                                 href={item.downloadUrl}
                                                 target="_blank"
+                                                rel="noopener noreferrer"
                                                 className="flex-1 py-4 bg-cyan-600 hover:bg-cyan-500 text-black rounded-2xl flex items-center justify-center gap-2 font-black uppercase text-[10px] tracking-[0.2em] transition-all shadow-lg shadow-cyan-600/20"
                                             >
-                                                <FiDownload /> Deploy
+                                                <FiDownload /> Get
                                             </a>
                                         </div>
                                     </div>
@@ -139,14 +142,6 @@ const AllAssets = () => {
                     <div className="mt-20 flex flex-col items-center justify-center gap-4">
                         <FiLoader className="text-4xl text-cyan-500 animate-spin" />
                         <p className="text-slate-500 font-black text-[10px] uppercase tracking-[0.5em]">Synchronizing Hangar...</p>
-                    </div>
-                )}
-
-                {!hasMore && assets.length > 0 && (
-                    <div className="mt-20 text-center">
-                        <div className="inline-block px-8 py-3 bg-slate-900/50 border border-slate-800 rounded-full">
-                            <p className="text-slate-500 font-bold text-[10px] uppercase tracking-widest">End of Manifest - All assets loaded</p>
-                        </div>
                     </div>
                 )}
             </div>

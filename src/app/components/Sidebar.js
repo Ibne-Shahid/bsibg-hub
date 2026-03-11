@@ -1,13 +1,13 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation"; 
-import { FiGrid, FiPlusCircle, FiUsers, FiLogOut, FiHome, FiMenu, FiX } from "react-icons/fi";
+import { FiGrid, FiPlusCircle, FiUsers, FiLogOut, FiHome, FiMenu, FiX, FiLoader } from "react-icons/fi";
 import { useAuth } from "@/context/AuthContext";
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false); 
-  const { dbUser, logOut } = useAuth();
+  const { dbUser, loading, logOut } = useAuth();
   const pathname = usePathname();
   const router = useRouter(); 
 
@@ -27,6 +27,14 @@ const Sidebar = () => {
       console.error("Logout error:", error);
     }
   };
+
+  if (loading) {
+    return (
+      <aside className="fixed inset-y-0 left-0 z-60 bg-[#0f172a] border-r border-slate-800 p-6 w-64 flex items-center justify-center">
+        <FiLoader className="text-cyan-500 animate-spin text-2xl" />
+      </aside>
+    );
+  }
 
   return (
     <>
@@ -55,6 +63,7 @@ const Sidebar = () => {
           {menuItems.map((item) => {
             const hasAccess = item.roles.includes(dbUser?.role);
             const isActive = pathname === item.path;
+            
             if (!hasAccess) return null;
 
             return (

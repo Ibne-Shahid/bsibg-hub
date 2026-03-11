@@ -1,8 +1,11 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiDownload, FiInfo, FiLoader } from "react-icons/fi";
+import { FiDownload, FiInfo, FiLoader, FiLock } from "react-icons/fi";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import Swal from "sweetalert2";
+import { useAuth } from "@/context/AuthContext";
 
 const AllAssets = () => {
     const [assets, setAssets] = useState([]);
@@ -10,9 +13,12 @@ const AllAssets = () => {
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [category, setCategory] = useState("all");
+    
+    const { user } = useAuth();
+    const router = useRouter();
 
     const fetchAssets = useCallback(async (isNewCategory = false) => {
-        if (loading) return;
+        if (loading || (!hasMore && !isNewCategory)) return;
         setLoading(true);
 
         const currentPage = isNewCategory ? 1 : page;
@@ -23,6 +29,7 @@ const AllAssets = () => {
 
             if (isNewCategory) {
                 setAssets(data.assets);
+                setPage(2);
             } else {
                 setAssets(prev => {
                     const newAssets = data.assets.filter(
@@ -30,18 +37,19 @@ const AllAssets = () => {
                     );
                     return [...prev, ...newAssets];
                 });
+                setPage(prev => prev + 1);
             }
 
             setHasMore(data.hasMore);
-            setPage(prev => isNewCategory ? 2 : prev + 1);
         } catch (err) {
             console.error("Error loading assets:", err);
         } finally {
             setLoading(false);
         }
-    }, [category, page, loading]);
+    }, [category, page, loading, hasMore]);
 
     useEffect(() => {
+        setHasMore(true);
         fetchAssets(true);
     }, [category]);
 
@@ -54,6 +62,33 @@ const AllAssets = () => {
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
     }, [fetchAssets, hasMore, loading]);
+
+    const handleDownloadClick = (e, downloadUrl) => {
+        if (!user) {
+            e.preventDefault();
+            Swal.fire({
+                title: "AUTHENTICATION REQUIRED",
+                text: "Please login to your BSIBG account to deploy this asset from the hangar.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#06b6d4",
+                cancelButtonColor: "#1e293b",
+                confirmButtonText: "LOGIN NOW",
+                background: "#0f172a",
+                color: "#fff",
+                customClass: {
+                    popup: "rounded-3xl border border-slate-800",
+                    title: "italic font-black italic",
+                    confirmButton: "rounded-xl font-bold tracking-widest",
+                    cancelButton: "rounded-xl font-bold tracking-widest",
+                },
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    router.push("/login");
+                }
+            });
+        }
+    };
 
     return (
         <section className="min-h-screen bg-[#020617] py-20">
@@ -72,8 +107,8 @@ const AllAssets = () => {
                                 key={type}
                                 onClick={() => setCategory(type)}
                                 className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${category === type
-                                        ? "bg-cyan-600 text-black shadow-lg shadow-cyan-600/30"
-                                        : "text-slate-500 hover:text-white"
+                                    ? "bg-cyan-600 text-black shadow-lg shadow-cyan-600/30"
+                                    : "text-slate-500 hover:text-white"
                                     }`}
                             >
                                 {type}
@@ -83,13 +118,14 @@ const AllAssets = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                    <AnimatePresence>
+                    <AnimatePresence mode="popLayout">
                         {assets.map((item, index) => (
                             <motion.div
                                 key={item._id}
                                 initial={{ opacity: 0, y: 30 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.6, delay: index % 10 * 0.1 }}
+                                exit={{ opacity: 0, scale: 0.9 }}
+                                transition={{ duration: 0.6, delay: (index % 10) * 0.1 }}
                                 className="group relative bg-slate-900/20 border border-slate-800/50 rounded-[3rem] overflow-hidden hover:border-cyan-500/40 transition-all duration-500"
                             >
                                 <div className="relative h-80 overflow-hidden">
@@ -112,7 +148,7 @@ const AllAssets = () => {
                                             {item.title}
                                         </h3>
                                         <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-6">
-                                            Engineering by <span className="text-slate-300 italic">{item.creatorName}</span>
+                                            Engineering by <span className="text-slate-300 italic">{item.creatorName || "BSIBG Official"}</span>
                                         </p>
 
                                         <div className="flex items-center gap-4">
@@ -124,11 +160,12 @@ const AllAssets = () => {
                                             </Link>
                                             <a
                                                 href={item.downloadUrl}
-                                                target="_blank"
+                                                onClick={(e) => handleDownloadClick(e, item.downloadUrl)}
+                                                target={user ? "_blank" : "_self"}
                                                 rel="noopener noreferrer"
-                                                className="flex-1 py-4 bg-cyan-600 hover:bg-cyan-500 text-black rounded-2xl flex items-center justify-center gap-2 font-black uppercase text-[10px] tracking-[0.2em] transition-all shadow-lg shadow-cyan-600/20"
+                                                className="flex-1 py-4 bg-cyan-600 hover:bg-cyan-500 text-black rounded-2xl flex items-center justify-center gap-2 font-black uppercase text-[10px] tracking-[0.2em] transition-all shadow-lg shadow-cyan-600/20 active:scale-95"
                                             >
-                                                <FiDownload /> Get
+                                                {user ? <FiDownload /> : <FiLock />} {user ? "Get" : "Unlock"}
                                             </a>
                                         </div>
                                     </div>

@@ -5,7 +5,7 @@ import Link from "next/link";
 
 const TournamentSection = () => {
     const topThree = [
-        { name: "Yasin Arafaath", points: 2450, rank: 2, img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQebNGy8SPFXp1OiK7FTUF39A1HhpClWxt0ng&s" },
+        { name: "Sabbir Ahmed", points: 2450, rank: 2, img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQebNGy8SPFXp1OiK7FTUF39A1HhpClWxt0ng&s" },
         { name: "Rakib Hossain", points: 2800, rank: 1, img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRX3RfwYLd1s5bv7xIRI0vaa6beIrNWNaTK-g&s" },
         { name: "Tanvir Siyam", points: 2100, rank: 3, img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQbId-N6PFRcbo0Dyk1sF0170Y04_WB9T9sMQ&s" },
     ];

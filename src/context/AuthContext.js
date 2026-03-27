@@ -1,10 +1,10 @@
 "use client";
 import { createContext, useContext, useEffect, useState } from "react";
-import { 
-  onAuthStateChanged, 
-  signInWithPopup, 
-  signOut, 
-  createUserWithEmailAndPassword, 
+import {
+  onAuthStateChanged,
+  signInWithPopup,
+  signOut,
+  createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   updateProfile,
   GoogleAuthProvider
@@ -15,8 +15,18 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [dbUser, setDbUser] = useState(null); 
+  const [dbUser, setDbUser] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const refetchUser = async (email) => {
+    try {
+        const res = await fetch(`http://localhost:5000/users?email=${email}`);
+        const data = await res.json();
+        setDbUser(data);
+    } catch (err) {
+        console.error("Refetch Error:", err);
+    }
+};
 
   const saveUserToDb = async (currentUser) => {
     const userData = {
@@ -24,7 +34,7 @@ export const AuthProvider = ({ children }) => {
       name: currentUser.displayName,
       email: currentUser.email,
       photoURL: currentUser.photoURL,
-      role: 'user' 
+      role: 'user'
     };
     try {
       const res = await fetch('http://localhost:5000/users', {
@@ -38,10 +48,47 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const updateUserProfile = async (name, imageFile) => {
+    try {
+      let finalPhotoURL = dbUser.photoURL;
+
+      if (imageFile) {
+        const formData = new FormData();
+        formData.append("upload_preset", "bsibg-preset");
+        formData.append("file", imageFile);
+
+        const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/dyzfniecr/image/upload`, {
+          method: "POST",
+          body: formData
+        });
+        const cloudData = await cloudRes.json();
+        if (cloudRes.ok) finalPhotoURL = cloudData.secure_url;
+      }
+
+      const response = await fetch(`http://localhost:5000/users/update-profile/${dbUser._id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, photoURL: finalPhotoURL })
+      });
+
+      const data = await response.json();
+      if (response.ok && data.success) {
+        await refetchUser(dbUser.email); 
+        return { success: true };
+      } else {
+        return { success: false, error: data.message || "Backend Sync Failed" };
+      }
+
+    } catch (error) {
+      console.error("Update Error:", error);
+      return { success: false, error: "Server unreachable. Check if Backend is running." };
+    }
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
-      
+
       if (currentUser) {
         try {
           const res = await fetch(`http://localhost:5000/users?email=${currentUser.email}`);
@@ -90,8 +137,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext value={{ 
-      user, dbUser, loading, loginWithGoogle, registerWithEmail, loginWithEmail, logOut 
+    <AuthContext value={{
+      user, dbUser, loading, loginWithGoogle, registerWithEmail, loginWithEmail, logOut, updateUserProfile
     }}>
       {children}
     </AuthContext>

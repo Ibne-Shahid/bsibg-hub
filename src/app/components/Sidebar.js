@@ -1,8 +1,19 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation"; 
-import { FiGrid, FiPlusCircle, FiUsers, FiLogOut, FiHome, FiMenu, FiX, FiLoader } from "react-icons/fi";
+import { 
+  FiGrid, 
+  FiPlusCircle, 
+  FiUsers, 
+  FiLogOut, 
+  FiHome, 
+  FiMenu, 
+  FiX, 
+  FiLoader, 
+  FiUser, 
+  FiChevronRight 
+} from "react-icons/fi";
 import { useAuth } from "@/context/AuthContext";
 
 const Sidebar = () => {
@@ -12,7 +23,8 @@ const Sidebar = () => {
   const router = useRouter(); 
 
   const menuItems = [
-    { name: "Overview", icon: <FiGrid />, path: "/dashboard", roles: ["admin", "moderator", "user", "gamer"] },
+    { name: "Overview", icon: <FiGrid />, path: "/dashboard", roles: ["admin", "moderator", "user"] },
+    { name: "My Profile", icon: <FiUser />, path: "/dashboard/profile", roles: ["admin", "moderator", "user"] },
     { name: "Upload Mod", icon: <FiPlusCircle />, path: "/dashboard/upload", roles: ["admin", "moderator"] },
     { name: "Manage Users", icon: <FiUsers />, path: "/dashboard/users", roles: ["admin"] },
   ];
@@ -83,10 +95,21 @@ const Sidebar = () => {
         </nav>
 
         {dbUser && (
-           <div className="mb-6 p-4 bg-slate-900/50 rounded-2xl border border-slate-800">
-              <p className="text-white text-[10px] font-black truncate uppercase">{dbUser.name}</p>
-              <p className="text-cyan-500 text-[8px] font-bold uppercase tracking-widest">{dbUser.role}</p>
-           </div>
+          <Link href="/dashboard/profile" onClick={() => setIsOpen(false)}>
+            <div className="mb-6 p-4 bg-slate-900/50 rounded-2xl border border-slate-800 hover:border-cyan-500/50 transition-all group">
+              <div className="flex items-center justify-between">
+                <div className="min-w-0">
+                  <p className="text-white text-[10px] font-black truncate uppercase group-hover:text-cyan-400 transition-colors">
+                    {dbUser.name}
+                  </p>
+                  <p className="text-cyan-500 text-[8px] font-bold uppercase tracking-widest">
+                    {dbUser.role}
+                  </p>
+                </div>
+                <FiChevronRight size={14} className="text-slate-600 group-hover:text-cyan-500 transition-colors" />
+              </div>
+            </div>
+          </Link>
         )}
 
         <div className="pt-6 border-t border-slate-800 space-y-2">

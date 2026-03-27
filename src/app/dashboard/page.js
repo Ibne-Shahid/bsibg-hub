@@ -54,7 +54,6 @@ const DashboardOverview = () => {
                 <p className="text-slate-400 mt-2 font-medium">Real-time statistics of BSIBG community assets.</p>
             </motion.header>
 
-            {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {statCards.map((card, i) => (
                     <motion.div 

@@ -73,7 +73,8 @@ const Sidebar = () => {
 
         <nav className="flex-1 space-y-1.5">
           {menuItems.map((item) => {
-            const hasAccess = item.roles.includes(dbUser?.role);
+            const currentRole = dbUser?.role || "user";
+            const hasAccess = item.roles.includes(currentRole);
             const isActive = pathname === item.path;
             
             if (!hasAccess) return null;

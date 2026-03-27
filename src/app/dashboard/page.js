@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion"; 
 import { FiUsers, FiBox, FiLayers } from "react-icons/fi";
 
 const DashboardOverview = () => {
@@ -22,34 +23,76 @@ const DashboardOverview = () => {
         { label: "Custom Skins", value: stats.totalSkins, icon: <FiLayers />, color: "text-emerald-500", bg: "bg-emerald-500/10" },
     ];
 
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: { staggerChildren: 0.1, delayChildren: 0.2 }
+        }
+    };
+
+    const cardVariants = {
+        hidden: { y: 20, opacity: 0 },
+        visible: { 
+            y: 0, 
+            opacity: 1,
+            transition: { type: "spring", stiffness: 100 }
+        }
+    };
+
     return (
-        <div className="space-y-10">
-            <header>
+        <motion.div 
+            initial="hidden" 
+            animate="visible" 
+            variants={containerVariants}
+            className="space-y-10"
+        >
+            <motion.header variants={cardVariants}>
                 <h1 className="text-4xl font-black italic tracking-tighter text-white">
                     SYSTEM <span className="text-cyan-500 text-2xl border border-cyan-500/30 px-3 py-1 rounded-xl uppercase ml-2">Overview</span>
                 </h1>
                 <p className="text-slate-400 mt-2 font-medium">Real-time statistics of BSIBG community assets.</p>
-            </header>
+            </motion.header>
 
+            {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {statCards.map((card, i) => (
-                    <div key={i} className="bg-slate-900/40 border border-slate-800 p-8 rounded-[2.5rem] hover:border-cyan-500/30 transition-all group">
-                        <div className={`w-14 h-14 ${card.bg} ${card.color} rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform`}>
+                    <motion.div 
+                        key={i} 
+                        variants={cardVariants}
+                        whileHover={{ y: -8, transition: { duration: 0.2 } }}
+                        className="bg-slate-900/40 border border-slate-800 p-8 rounded-[2.5rem] hover:border-cyan-500/30 transition-all group relative overflow-hidden"
+                    >
+                        <div className={`absolute inset-0 ${card.bg} opacity-0 group-hover:opacity-100 transition-opacity blur-3xl -z-10`} />
+
+                        <div className={`w-14 h-14 ${card.bg} ${card.color} rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 group-hover:rotate-3 transition-transform`}>
                             {card.icon}
                         </div>
+                        
                         <h3 className="text-slate-500 text-xs font-black uppercase tracking-[0.2em]">{card.label}</h3>
-                        <p className="text-4xl font-black text-white mt-2 tabular-nums">
+                        
+                        <motion.p 
+                            initial={{ scale: 0.5 }}
+                            animate={{ scale: 1 }}
+                            className="text-4xl font-black text-white mt-2 tabular-nums"
+                        >
                             {loading ? "..." : card.value}
-                        </p>
-                    </div>
+                        </motion.p>
+                    </motion.div>
                 ))}
             </div>
 
-            <div className="bg-slate-900/40 border border-slate-800 rounded-[2.5rem] p-8">
+            <motion.div 
+                variants={cardVariants}
+                className="bg-slate-900/40 border border-slate-800 rounded-[2.5rem] p-8"
+            >
                 <h2 className="text-xl font-bold text-white mb-4">Recent System Logs</h2>
-                <p className="text-slate-500 text-sm italic">All systems are operational. No recent errors found.</p>
-            </div>
-        </div>
+                <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <p className="text-slate-500 text-sm italic">All systems are operational. No recent errors found.</p>
+                </div>
+            </motion.div>
+        </motion.div>
     );
 };
 

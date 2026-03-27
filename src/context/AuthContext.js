@@ -18,6 +18,15 @@ export const AuthProvider = ({ children }) => {
   const [dbUser, setDbUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const updateUser = async (name, photo) => {
+    if (auth.currentUser) {
+      return updateProfile(auth.currentUser, {
+        displayName: name,
+        photoURL: photo
+      });
+    }
+  };
+
   const refetchUser = async (email) => {
     try {
         const res = await fetch(`http://localhost:5000/users?email=${email}`);
@@ -138,7 +147,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext value={{
-      user, dbUser, loading, loginWithGoogle, registerWithEmail, loginWithEmail, logOut, updateUserProfile
+      user, dbUser, loading, loginWithGoogle, registerWithEmail, loginWithEmail, logOut, updateUserProfile, updateUser
     }}>
       {children}
     </AuthContext>

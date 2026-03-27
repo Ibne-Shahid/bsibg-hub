@@ -62,7 +62,7 @@ const ProfileDashboard = () => {
 
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-6xl mx-auto p-4 md:p-6 space-y-8">
-            {/* Header Section */}
+            
             <motion.section 
                 initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
                 className="flex flex-col md:flex-row items-center gap-8 bg-slate-900/40 p-8 rounded-[2.5rem] border border-slate-800 relative overflow-hidden"
@@ -96,14 +96,12 @@ const ProfileDashboard = () => {
                 </div>
             </motion.section>
 
-            {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <StatCard icon={<Calendar size={18}/>} title="Monthly Drive" value={dbUser?.monthlyPoints || 0} color="cyan" />
                 <StatCard icon={<Trophy size={18}/>} title="Tournament Best" value={`#${dbUser?.bestPosition || '--'}`} color="orange" />
                 <StatCard icon={<History size={18}/>} title="Performance Log" value={dbUser?.pointsHistory?.length || 0} color="purple" subtitle="Activities" />
             </div>
 
-            {/* Update Modal */}
             <AnimatePresence>
                 {isEditModalOpen && (
                     <div className="fixed inset-0 z-100 flex items-center justify-center p-4">

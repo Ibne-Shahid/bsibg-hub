@@ -10,7 +10,7 @@ const ModDetails = () => {
     const { id } = useParams();
     const router = useRouter();
     
-    const { user, loading: authLoading } = useAuth
+    const { user, loading: authLoading } = useAuth(); 
 
     const [mod, setMod] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -22,7 +22,10 @@ const ModDetails = () => {
                 setMod(data);
                 setLoading(false);
             })
-            .catch(err => console.error(err));
+            .catch(err => {
+                console.error(err);
+                setLoading(false);
+            });
     }, [id]);
 
     if (loading || authLoading) {
@@ -91,9 +94,9 @@ const ModDetails = () => {
                                 href={mod.downloadUrl} 
                                 target="_blank" 
                                 rel="noopener noreferrer"
-                                className="w-full py-6 bg-cyan-600 hover:bg-cyan-500 text-black font-black uppercase text-xs tracking-[0.4em] rounded-2xl flex items-center justify-center gap-3 transition-all shadow-2xl shadow-cyan-900/30 active:scale-95 group"
+                                className="w-full py-6 bg-cyan-600 hover:bg-cyan-500 text-black font-black uppercase text-xs tracking-[0.4em] rounded-2xl flex items-center justify-center gap-3 transition-all shadow-2xl shadow-cyan-900/30 active:scale-95 group cursor-pointer"
                             >
-                                <FiDownload className="group-hover:translate-y-0.5 transition-transform" size={20} /> Deploy to Simulator
+                                <FiDownload className="group-hover:translate-y-0.5 transition-transform" size={20} /> Download
                             </a>
                         ) : (
                             <div className="space-y-4">

@@ -4,7 +4,12 @@ import { Trophy, Medal, TrendingUp, User, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 const Leaderboard = () => {
-    // Dummy Data for Top 10 (Pore backend theke fetch hobe)
+
+    const currentMonthYear = new Intl.DateTimeFormat('en-US', { 
+        month: 'long', 
+        year: 'numeric' 
+    }).format(new Date());
+
     const topTen = [
         { id: 1, name: "Rakib Hossain", points: 2800, rank: 1, status: "Legend" },
         { id: 2, name: "Sabbir Ahmed", points: 2450, rank: 2, status: "Pro" },
@@ -20,11 +25,9 @@ const Leaderboard = () => {
 
     return (
         <main className="min-h-screen bg-[#020617] pt-32 pb-20 px-4 md:px-10">
-            {/* Background Decorations */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-6xl h-125 bg-cyan-500/5 blur-[120px] rounded-full pointer-events-none" />
 
             <div className="max-w-5xl mx-auto relative z-10">
-                {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
                     <div>
                         <Link href="/" className="inline-flex items-center gap-2 text-slate-500 hover:text-cyan-400 transition-colors mb-4 text-sm font-bold uppercase tracking-widest">
@@ -41,7 +44,7 @@ const Leaderboard = () => {
                         </div>
                         <div>
                             <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest">Season</p>
-                            <p className="text-white font-bold italic uppercase">March 2026</p>
+                            <p className="text-white font-bold italic uppercase">{currentMonthYear}</p>
                         </div>
                     </div>
                 </div>

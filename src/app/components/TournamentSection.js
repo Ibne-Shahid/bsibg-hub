@@ -41,13 +41,11 @@ const TournamentSection = () => {
                             <Calendar className="text-cyan-500 w-10 h-10 mb-6" />
                             <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter">BSIBG Monthly League</h3>
                             <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mt-2 mb-6">Community Exclusive • Points Based</p>
-                            <p className="text-slate-400 text-sm leading-relaxed mb-8 italic">Daily terminal-based point updates. Climb the ranks to secure your spot in the Top 3.</p>
+                            <p className="text-slate-400 text-sm leading-relaxed mb-8 italic">Daily terminal-based point updates. Climb the ranks to secure your spot in the Top 10.</p>
                             <Link href="/leaderboard" className="px-8 py-3 bg-cyan-600 text-black rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-cyan-500 transition-all">Full Leaderboard</Link>
                         </div>
                     </div>
                 </div>
-
-                {/* Top Drivers Section */}
                 <div className="text-center mt-20">
                     <motion.div initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} className="inline-block">
                         <h2 className="text-3xl md:text-5xl font-black text-white uppercase italic tracking-tighter mb-4 flex items-center justify-center gap-3">
